@@ -1,0 +1,63 @@
+name: compression comparison
+
+on: 
+  workflow_dispatch:
+
+jobs:
+  gha-compression:
+    name: Just GHA Compression
+    runs-on: macos-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-artifact
+          path: build/
+      
+      - name: Download Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: build-artifact
+          path: out
+      
+      - name: List out dir
+        shell: bash
+        run: |
+          ls out
+
+  manual-compression:
+    name: Manual Compression on top of GHA Compression
+    runs-on: macos-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Compress Artifact
+        shell: bash
+        run: |
+          ditto -c -k --sequesterRsrc build compressed-build.zip
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-artifact
+          path: compressed-build.zip
+      
+      - name: Download Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: build-artifact
+          path: compressed
+      
+      - name: Decompress Artifact
+        shell: bash
+        run: |
+          unzip compressed/compressed-build.zip -d ./out
+      
+      - name: List out dir
+        shell: bash
+        run: |
+          ls out
